@@ -6,5 +6,5 @@ import retrofit2.Call
 
 object SendRequest {
     fun getPhotos(): Call<ArrayList<PhotoDTO>> =
-        PhotoRetrofirClient.getClient().create(PhotoService::class.java).getPhotosList()
+        PhotoRetrofitClient.getClient().create(PhotoService::class.java).getPhotosList()
 }

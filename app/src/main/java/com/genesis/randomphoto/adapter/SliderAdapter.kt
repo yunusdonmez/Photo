@@ -21,7 +21,9 @@ class SliderAdapter(private var context: Context, private var mList: ArrayList<P
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (mList[position].id != 9999) {
-            val URL = "https://picsum.photos/400/600?image=${mList[position].id}"
+            val URL = "https://picsum.photos/500/800?image=${mList[position].id}"
+            //val URL = "https://picsum.photos/1400/2000?image=${mList[position].id}"
+
             // val options=RequestOptions.placeholderOf(R.drawable.background).error(R.drawable.background)
             //Glide.with(holder.itemView).load(URL).apply(options).into(holder.imageBackground)
             Glide.with(holder.itemView).load(URL).into(holder.imageBackground)
