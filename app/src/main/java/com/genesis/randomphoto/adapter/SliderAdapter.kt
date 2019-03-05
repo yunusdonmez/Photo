@@ -7,7 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.genesis.randomphoto.R
+import com.genesis.randomphoto.dto.FabSingletonItem
 import com.genesis.randomphoto.dto.PhotoDTO
 
 class SliderAdapter(private var context: Context, private var mList: ArrayList<PhotoDTO>) :
@@ -22,13 +24,12 @@ class SliderAdapter(private var context: Context, private var mList: ArrayList<P
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (mList[position].id != 9999) {
             val URL = "https://picsum.photos/500/800?image=${mList[position].id}"
-            //val URL = "https://picsum.photos/1400/2000?image=${mList[position].id}"
+            val options = RequestOptions.errorOf(R.drawable.upset)
+            Glide.with(holder.itemView).load(URL).apply(options).into(holder.imageBackground)
+            FabSingletonItem.selected = mList[position].id
 
-            // val options=RequestOptions.placeholderOf(R.drawable.background).error(R.drawable.background)
-            //Glide.with(holder.itemView).load(URL).apply(options).into(holder.imageBackground)
-            Glide.with(holder.itemView).load(URL).into(holder.imageBackground)
+            //Glide.with(holder.itemView).load(URL).into(holder.imageBackground)
         } else {
-            // Glide.with(holder.itemView).asGif().load("https://gifs.benlk.com/rubiks-loading.gif").into(holder.imageBackground)
             Glide.with(holder.itemView).load(R.drawable.loading).into(holder.imageBackground)
         }
     }

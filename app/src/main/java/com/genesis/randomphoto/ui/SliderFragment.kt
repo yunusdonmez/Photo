@@ -3,6 +3,7 @@ package com.genesis.randomphoto.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.RecyclerView
@@ -15,9 +16,14 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.Toast
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.transition.Transition
 import com.genesis.randomphoto.R
 import com.genesis.randomphoto.adapter.SliderAdapter
+import com.genesis.randomphoto.dto.FabSingletonItem
 import com.genesis.randomphoto.dto.PhotoDTO
+import com.genesis.randomphoto.framework.ImageDownloader.ImageDownload
 import com.genesis.randomphoto.framework.slide.ItemConfig
 import com.genesis.randomphoto.framework.slide.ItemTouchHelperCallback
 import com.genesis.randomphoto.framework.slide.OnSlideListener
@@ -48,7 +54,6 @@ class SliderFragment : Fragment() {
     private lateinit var revertMainFab: Animation
     private lateinit var sliderFragmentViewModel: SliderFragmentViewModel
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -56,7 +61,6 @@ class SliderFragment : Fragment() {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_slider, container, false)
         addData()
-
         return rootView
     }
 
@@ -88,7 +92,16 @@ class SliderFragment : Fragment() {
             Toast.makeText(context, "Edit!!!", Toast.LENGTH_SHORT).show()
         }
         fab_save.setOnClickListener {
-            Toast.makeText(context, "Save!!!", Toast.LENGTH_SHORT).show()
+            val URL = "https://picsum.photos/400/600?image=${FabSingletonItem.selected}"
+            Glide.with(this)
+                .asBitmap()
+                .load(URL)
+                .into(object : SimpleTarget<Bitmap>() {
+                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                        ImageDownload.saveImage(resource, fab_save.context)
+                    }
+
+                })
         }
     }
 
@@ -123,7 +136,6 @@ class SliderFragment : Fragment() {
     private fun hideFAB() {
 
         fab_main.startAnimation(revertMainFab)
-
         //Floating Action Button 1
         val layoutParams: FrameLayout.LayoutParams = fab_edit.layoutParams as FrameLayout.LayoutParams
         layoutParams.rightMargin -= (fab_edit.width * 1.7).toInt()
