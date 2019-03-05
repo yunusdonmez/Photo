@@ -1,8 +1,9 @@
 package com.genesis.randomphoto.ui
 
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.design.widget.CoordinatorLayout
 import android.support.v4.app.Fragment
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
@@ -21,29 +22,12 @@ import com.genesis.randomphoto.framework.slide.ItemConfig
 import com.genesis.randomphoto.framework.slide.ItemTouchHelperCallback
 import com.genesis.randomphoto.framework.slide.OnSlideListener
 import com.genesis.randomphoto.framework.slide.SlideLayoutManager
-import com.genesis.randomphoto.network.SendRequest
+import com.genesis.randomphoto.viewmodel.SliderFragmentViewModel
 import kotlinx.android.synthetic.main.fab_layout.*
 import kotlinx.android.synthetic.main.fragment_slider.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 
-class SliderFragment : Fragment(), Callback<ArrayList<PhotoDTO>> {
-    override fun onFailure(call: Call<ArrayList<PhotoDTO>>, t: Throwable) {
-        Toast.makeText(context, "Resimleri Görebilmek İçin İnternet Bağlantısı Gerekir.", Toast.LENGTH_LONG).show()
-        mPhotoList.add(PhotoDTO(9999))
-        initView()
-        initListener()
-    }
-
-    override fun onResponse(call: Call<ArrayList<PhotoDTO>>, response: Response<ArrayList<PhotoDTO>>) {
-        mPhotoList = response.body()!!
-        mPhotoList.shuffle()
-        initView()
-        initListener()
-    }
-
+class SliderFragment : Fragment() {
 
     private lateinit var rootView: View
     private lateinit var mRecyclerView: RecyclerView
@@ -51,7 +35,6 @@ class SliderFragment : Fragment(), Callback<ArrayList<PhotoDTO>> {
     private lateinit var mItemTouchHelper: ItemTouchHelper
     private lateinit var mItemTouchHelperCallback: ItemTouchHelperCallback<Int>
     private var mAdapter: SliderAdapter? = null
-    private var mPhotoList = ArrayList<PhotoDTO>()
 
     //fab
     private var FAB_Status = false
@@ -63,11 +46,8 @@ class SliderFragment : Fragment(), Callback<ArrayList<PhotoDTO>> {
     private lateinit var hideFabShare: Animation
     private lateinit var rotateMainFab: Animation
     private lateinit var revertMainFab: Animation
-    /* private lateinit var fabMain: FloatingActionButton
-     private lateinit var fabEdit: FloatingActionButton
-     private lateinit var fabSave: FloatingActionButton
-     private lateinit var fabShare: FloatingActionButton*/
-    private lateinit var rootLayout: CoordinatorLayout
+    private lateinit var sliderFragmentViewModel: SliderFragmentViewModel
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -169,19 +149,6 @@ class SliderFragment : Fragment(), Callback<ArrayList<PhotoDTO>> {
         fab_share.isClickable = false
     }
 
-    private fun initView() {
-        Log.e("SliderFragment", "initView")
-        mRecyclerView = rootView.findViewById(R.id.recycler_view)
-        mAdapter = SliderAdapter(rootView.context, mPhotoList)
-        mRecyclerView.adapter = mAdapter
-        //addData()
-        mItemTouchHelperCallback = ItemTouchHelperCallback<Int>(mRecyclerView.adapter!!, mPhotoList)
-        mItemTouchHelper = ItemTouchHelper(mItemTouchHelperCallback)
-        mSlideLayoutManager = SlideLayoutManager(mRecyclerView, mItemTouchHelper)
-        mItemTouchHelper.attachToRecyclerView(mRecyclerView)
-        mRecyclerView.layoutManager = mSlideLayoutManager
-    }
-
     private fun initListener() {
         mItemTouchHelperCallback.setOnSlideListener(object : OnSlideListener<PhotoDTO> {
             override fun onSlided(viewHolder: RecyclerView.ViewHolder, t: PhotoDTO, direction: Int) {
@@ -205,7 +172,20 @@ class SliderFragment : Fragment(), Callback<ArrayList<PhotoDTO>> {
     }
 
     fun addData() {
-        SendRequest.getPhotos().enqueue(this@SliderFragment)
+        sliderFragmentViewModel = ViewModelProviders.of(this@SliderFragment).get(SliderFragmentViewModel::class.java)
+        sliderFragmentViewModel.photoList.observe(this, Observer {
+            Log.e("SliderFragment", "initView")
+            it?.shuffle()
+            mRecyclerView = rootView.findViewById(R.id.recycler_view)
+            mAdapter = SliderAdapter(rootView.context, it!!)
+            mRecyclerView.adapter = mAdapter
+            mItemTouchHelperCallback = ItemTouchHelperCallback<Int>(mRecyclerView.adapter!!, it)
+            mItemTouchHelper = ItemTouchHelper(mItemTouchHelperCallback)
+            mSlideLayoutManager = SlideLayoutManager(mRecyclerView, mItemTouchHelper)
+            mItemTouchHelper.attachToRecyclerView(mRecyclerView)
+            mRecyclerView.layoutManager = mSlideLayoutManager
+            initListener()
+        })
     }
 }
 
