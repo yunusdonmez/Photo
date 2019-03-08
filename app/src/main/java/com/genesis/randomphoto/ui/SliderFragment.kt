@@ -1,15 +1,19 @@
 package com.genesis.randomphoto.ui
 
 
+import android.Manifest
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,7 +61,9 @@ class SliderFragment : Fragment() {
     private lateinit var showFavoriteItems: Animation
     private lateinit var hideFavoriteItems: Animation
     private lateinit var sliderFragmentViewModel: SliderFragmentViewModel
-
+    private val TAG = "PermissionDemo"
+    private val RECORD_REQUEST_CODE = 101
+    private lateinit var resource: Bitmap
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -109,12 +115,49 @@ class SliderFragment : Fragment() {
                 .load(AppConfig.URL + FabSingletonItem.selected.toString())
                 .into(object : SimpleTarget<Bitmap>() {
                     override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                        ImageDownload.saveImage(resource, fab_save.context)
+                        this@SliderFragment.resource = resource
+                        setupPermissions()
                     }
                 })
         }
     }
 
+    private fun setupPermissions() {
+        val permission = ContextCompat.checkSelfPermission(context!!, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        //val permission = checkSelfPermission(context)
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Permission to record denied")
+        }
+        makeRequest()
+
+    }
+
+    private fun makeRequest() {
+        requestPermissions(
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            RECORD_REQUEST_CODE
+        )
+        /* ActivityCompat.requestPermissions(context as Activity,
+             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+             RECORD_REQUEST_CODE)*/
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when (requestCode) {
+            RECORD_REQUEST_CODE -> {
+
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(
+                        context,
+                        "Fotoğrafı İndirebilmek İçin Dosyalara Erişim İzni Gerekir!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    ImageDownload.saveImage(resource, fab_save.context)
+                }
+            }
+        }
+    }
     private fun expandFAB() {
 
         fab_main.startAnimation(rotateMainFab)
