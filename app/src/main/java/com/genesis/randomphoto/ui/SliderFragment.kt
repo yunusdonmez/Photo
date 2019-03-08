@@ -3,15 +3,17 @@ package com.genesis.randomphoto.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Point
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
@@ -23,6 +25,7 @@ import com.genesis.randomphoto.R
 import com.genesis.randomphoto.adapter.SliderAdapter
 import com.genesis.randomphoto.dto.FabSingletonItem
 import com.genesis.randomphoto.dto.PhotoDTO
+import com.genesis.randomphoto.framework.AppConfig
 import com.genesis.randomphoto.framework.ImageDownloader.ImageDownload
 import com.genesis.randomphoto.framework.slide.ItemConfig
 import com.genesis.randomphoto.framework.slide.ItemTouchHelperCallback
@@ -41,7 +44,6 @@ class SliderFragment : Fragment() {
     private lateinit var mItemTouchHelper: ItemTouchHelper
     private lateinit var mItemTouchHelperCallback: ItemTouchHelperCallback<Int>
     private var mAdapter: SliderAdapter? = null
-
     //fab
     private var FAB_Status = false
     private lateinit var showFabEdit: Animation
@@ -52,6 +54,8 @@ class SliderFragment : Fragment() {
     private lateinit var hideFabShare: Animation
     private lateinit var rotateMainFab: Animation
     private lateinit var revertMainFab: Animation
+    private lateinit var showFavoriteItems: Animation
+    private lateinit var hideFavoriteItems: Animation
     private lateinit var sliderFragmentViewModel: SliderFragmentViewModel
 
     override fun onCreateView(
@@ -59,6 +63,12 @@ class SliderFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        val wm = context!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val size = Point()
+        wm.defaultDisplay.getRealSize(size)
+        AppConfig.height = size.y
+        AppConfig.width = size.x
+        AppConfig.setURL()
         rootView = inflater.inflate(R.layout.fragment_slider, container, false)
         addData()
         return rootView
@@ -75,6 +85,8 @@ class SliderFragment : Fragment() {
         hideFabShare = AnimationUtils.loadAnimation(context, R.anim.hide_fab_share)
         rotateMainFab = AnimationUtils.loadAnimation(context, R.anim.fab_main_rotate)
         revertMainFab = AnimationUtils.loadAnimation(context, R.anim.fab_main_revert)
+        showFavoriteItems = AnimationUtils.loadAnimation(context, R.anim.show_favorite_items)
+        hideFavoriteItems = AnimationUtils.loadAnimation(context, R.anim.hide_favorite_items)
         fab_main.setOnClickListener {
             FAB_Status = if (!FAB_Status) {
                 expandFAB()
@@ -92,15 +104,13 @@ class SliderFragment : Fragment() {
             Toast.makeText(context, "Edit!!!", Toast.LENGTH_SHORT).show()
         }
         fab_save.setOnClickListener {
-            val URL = "https://picsum.photos/400/600?image=${FabSingletonItem.selected}"
             Glide.with(this)
                 .asBitmap()
-                .load(URL)
+                .load(AppConfig.URL + FabSingletonItem.selected.toString())
                 .into(object : SimpleTarget<Bitmap>() {
                     override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                         ImageDownload.saveImage(resource, fab_save.context)
                     }
-
                 })
         }
     }
@@ -131,6 +141,9 @@ class SliderFragment : Fragment() {
         fab_share.layoutParams = layoutParams3
         fab_share.startAnimation(showFabShare)
         fab_share.isClickable = true
+
+        heartGroup.startAnimation(hideFavoriteItems)
+
     }
 
     private fun hideFAB() {
@@ -159,15 +172,22 @@ class SliderFragment : Fragment() {
         fab_share.layoutParams = layoutParams3
         fab_share.startAnimation(hideFabShare)
         fab_share.isClickable = false
+
+        heartGroup.startAnimation(showFavoriteItems)
+
     }
 
     private fun initListener() {
         mItemTouchHelperCallback.setOnSlideListener(object : OnSlideListener<PhotoDTO> {
             override fun onSlided(viewHolder: RecyclerView.ViewHolder, t: PhotoDTO, direction: Int) {
-                Log.e("SliderFragment", "onSlided")
                 if (FAB_Status) {
                     hideFAB()
                     FAB_Status = false
+                }
+                if (direction == ItemConfig.SLIDED_LEFT) {
+                    imgHeart.startAnimation(AnimationUtils.loadAnimation(context, R.anim.favorite_items))
+                } else if (direction == ItemConfig.SLIDED_RIGHT) {
+                    imgBrokenHeart.startAnimation(AnimationUtils.loadAnimation(context, R.anim.favorite_items))
                 }
             }
 
@@ -186,7 +206,6 @@ class SliderFragment : Fragment() {
     fun addData() {
         sliderFragmentViewModel = ViewModelProviders.of(this@SliderFragment).get(SliderFragmentViewModel::class.java)
         sliderFragmentViewModel.photoList.observe(this, Observer {
-            Log.e("SliderFragment", "initView")
             it?.shuffle()
             mRecyclerView = rootView.findViewById(R.id.recycler_view)
             mAdapter = SliderAdapter(rootView.context, it!!)
@@ -200,5 +219,3 @@ class SliderFragment : Fragment() {
         })
     }
 }
-
-

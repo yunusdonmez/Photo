@@ -36,7 +36,7 @@ object ImageDownload {
         return saveImagePath
     }
 
-    fun galleryAddPic(imagePath: String, context: Context) {
+    private fun galleryAddPic(imagePath: String, context: Context) {
         val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
         val f = File(imagePath)
         val contentUri = Uri.fromFile(f)

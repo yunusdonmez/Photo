@@ -3,7 +3,6 @@ package com.genesis.randomphoto.ui
 
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,13 +27,10 @@ class SplashFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         object : CountDownTimer(2000, 1000) {
             override fun onFinish() {
-                Log.e("Timer", "Süre Bitti")
                 view?.let { Navigation.findNavController(it).navigate(R.id.action_splash_to_slider) }
             }
 
             override fun onTick(millisUntilFinished: Long) {
-                Log.e("Timer", "Süre Başladı")
-
             }
 
         }.start()

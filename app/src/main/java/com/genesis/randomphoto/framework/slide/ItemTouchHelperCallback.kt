@@ -3,33 +3,19 @@ package com.genesis.randomphoto.framework.slide
 import android.graphics.Canvas
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import android.util.Log
 import com.genesis.randomphoto.dto.PhotoDTO
 
-class ItemTouchHelperCallback<T> : ItemTouchHelper.Callback {
+class ItemTouchHelperCallback<T>(
+    adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>,
+    dataList: MutableList<PhotoDTO>
+) : ItemTouchHelper.Callback() {
 
-    private val adapter: RecyclerView.Adapter<*>
-    private val dataList: MutableList<PhotoDTO>?
+    private val adapter: RecyclerView.Adapter<*> = adapter
+    private val dataList: MutableList<PhotoDTO>? = dataList
     private lateinit var mListener: OnSlideListener<PhotoDTO>
-
-    /*constructor(
-        adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>,
-        dataList: MutableList<T>,
-        listener: OnSlideListener<T>
-    ) {
-        this.adapter = adapter
-        this.dataList = dataList
-        this.mListener = listener
-    }
-*/
-    constructor(adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>, dataList: MutableList<PhotoDTO>) {
-        this.adapter = adapter
-        this.dataList = dataList
-    }
 
     private fun <T> checkIsNull(t: T?): T {
         if (t == null) {
-            Log.e("ItemTouchHelperCallback", "checkisNull")
             throw NullPointerException()
         }
         return t
@@ -40,7 +26,6 @@ class ItemTouchHelperCallback<T> : ItemTouchHelper.Callback {
     }
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-        Log.e("ItemTouchHelperCallback", "getMovementFlags")
         val dragFlags = 0
         var slideFlags = 0
         val layoutManager = recyclerView.layoutManager
@@ -57,7 +42,6 @@ class ItemTouchHelperCallback<T> : ItemTouchHelper.Callback {
     ): Boolean = false
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        Log.e("ItemTouchHelperCallback", "onSwiped")
         viewHolder.itemView.setOnTouchListener(null)
         val layoutPosition = viewHolder.layoutPosition
         val remove = dataList!!.removeAt(layoutPosition)
@@ -86,8 +70,6 @@ class ItemTouchHelperCallback<T> : ItemTouchHelper.Callback {
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        Log.e("ItemTouchHelperCallback", "onChildDraw")
-
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
         val itemView = viewHolder.itemView
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
@@ -138,7 +120,6 @@ class ItemTouchHelperCallback<T> : ItemTouchHelper.Callback {
     }
 
     private fun getThreshold(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Float {
-        Log.e("ItemTouchHelperCallback", "getThreshold")
         return recyclerView.width * getSwipeThreshold(viewHolder)
     }
 }

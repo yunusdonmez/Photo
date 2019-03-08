@@ -11,6 +11,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.genesis.randomphoto.R
 import com.genesis.randomphoto.dto.FabSingletonItem
 import com.genesis.randomphoto.dto.PhotoDTO
+import com.genesis.randomphoto.framework.AppConfig
 
 class SliderAdapter(private var context: Context, private var mList: ArrayList<PhotoDTO>) :
     RecyclerView.Adapter<SliderAdapter.ViewHolder>() {
@@ -23,12 +24,10 @@ class SliderAdapter(private var context: Context, private var mList: ArrayList<P
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (mList[position].id != 9999) {
-            val URL = "https://picsum.photos/500/800?image=${mList[position].id}"
             val options = RequestOptions.errorOf(R.drawable.upset)
-            Glide.with(holder.itemView).load(URL).apply(options).into(holder.imageBackground)
+            Glide.with(holder.itemView).load(AppConfig.URL + mList[position].id.toString()).apply(options)
+                .into(holder.imageBackground)
             FabSingletonItem.selected = mList[position].id
-
-            //Glide.with(holder.itemView).load(URL).into(holder.imageBackground)
         } else {
             Glide.with(holder.itemView).load(R.drawable.loading).into(holder.imageBackground)
         }

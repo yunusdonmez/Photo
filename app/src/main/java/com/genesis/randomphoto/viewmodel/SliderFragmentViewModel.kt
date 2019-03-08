@@ -29,7 +29,6 @@ class SliderFragmentViewModel(application: Application) : AndroidViewModel(appli
             override fun onResponse(call: Call<ArrayList<PhotoDTO>>, response: Response<ArrayList<PhotoDTO>>) {
                 photoList.value = response.body()
             }
-
         })
     }
 
