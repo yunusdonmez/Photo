@@ -30,7 +30,7 @@ class ItemTouchHelperCallback<T>(
         var slideFlags = 0
         val layoutManager = recyclerView.layoutManager
         if (layoutManager is SlideLayoutManager) {
-            slideFlags = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            slideFlags = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT or ItemTouchHelper.DOWN
         }
         return makeMovementFlags(dragFlags, slideFlags)
     }
@@ -46,17 +46,13 @@ class ItemTouchHelperCallback<T>(
         val layoutPosition = viewHolder.layoutPosition
         val remove = dataList!!.removeAt(layoutPosition)
         adapter.notifyDataSetChanged()
-        if (mListener != null) {
-            mListener.onSlided(
-                viewHolder,
-                remove,
-                if (direction == ItemTouchHelper.LEFT) ItemConfig.SLIDED_LEFT else ItemConfig.SLIDED_RIGHT
-            )
-        }
+        mListener.onSlided(
+            viewHolder,
+            remove,
+            if (direction == ItemTouchHelper.LEFT) ItemConfig.SLIDED_LEFT else if (direction == ItemTouchHelper.RIGHT) ItemConfig.SLIDED_RIGHT else ItemConfig.SLIDED_DOWN
+        )
         if (adapter.itemCount == 0) {
-            if (mListener != null) {
-                mListener.onClear()
-            }
+            mListener.onClear()
         }
     }
 
@@ -100,16 +96,14 @@ class ItemTouchHelperCallback<T>(
                             ItemConfig.DEFAULT_TRANSLATE_Y
                 }
             }
-            if (mListener != null) {
-                if (ratio != 0f) {
-                    mListener.onSliding(
-                        viewHolder,
-                        ratio,
-                        if (ratio < 0) ItemConfig.SLIDING_LEFT else ItemConfig.SLIDING_RIGHT
-                    )
-                } else {
-                    mListener.onSliding(viewHolder, ratio, ItemConfig.SLIDING_NONE)
-                }
+            if (ratio != 0f) {
+                mListener.onSliding(
+                    viewHolder,
+                    ratio,
+                    if (ratio < 0) ItemConfig.SLIDING_LEFT else ItemConfig.SLIDING_RIGHT
+                )
+            } else {
+                mListener.onSliding(viewHolder, ratio, ItemConfig.SLIDING_NONE)
             }
         }
     }

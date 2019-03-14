@@ -1,6 +1,5 @@
 package com.genesis.randomphoto.framework.slide
 
-import android.support.v4.view.MotionEventCompat
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.MotionEvent
@@ -9,20 +8,13 @@ import android.view.ViewGroup
 
 class SlideLayoutManager(mRecyclerView: RecyclerView, mItemTouchHelper: ItemTouchHelper) :
     RecyclerView.LayoutManager() {
-    private val mRecyclerView: RecyclerView
-    private val mItemTouchHelper: ItemTouchHelper
 
-    init {
-        this.mItemTouchHelper = mItemTouchHelper
-        this.mRecyclerView = mRecyclerView
-    }
-
-    private fun <T> checkIsNull(t: T?): T {
+    /*private fun <T> checkIsNull(t: T?): T {
         if (t == null) {
             throw NullPointerException()
         }
         return t
-    }
+    }*/
 
     override fun generateDefaultLayoutParams(): RecyclerView.LayoutParams {
         return RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
@@ -84,7 +76,7 @@ class SlideLayoutManager(mRecyclerView: RecyclerView, mItemTouchHelper: ItemTouc
 
     private val mOnTouchListener = View.OnTouchListener { v, event ->
         val childViewHolder = mRecyclerView.getChildViewHolder(v)
-        if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
             mItemTouchHelper.startSwipe(childViewHolder)
         }
         false

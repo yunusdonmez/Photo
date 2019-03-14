@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Point
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
@@ -149,7 +150,7 @@ class SliderFragment : Fragment() {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(
                         context,
-                        "Fotoğrafı İndirebilmek İçin Dosyalara Erişim İzni Gerekir!",
+                        "Resim Yüklenemedi!",
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
@@ -158,6 +159,7 @@ class SliderFragment : Fragment() {
             }
         }
     }
+
     private fun expandFAB() {
 
         fab_main.startAnimation(rotateMainFab)
@@ -231,6 +233,21 @@ class SliderFragment : Fragment() {
                     imgHeart.startAnimation(AnimationUtils.loadAnimation(context, R.anim.favorite_items))
                 } else if (direction == ItemConfig.SLIDED_RIGHT) {
                     imgBrokenHeart.startAnimation(AnimationUtils.loadAnimation(context, R.anim.favorite_items))
+                } else {
+                    Glide.with(this@SliderFragment)
+                        .asBitmap()
+                        .load(AppConfig.URL + FabSingletonItem.selected.toString())
+                        .into(object : SimpleTarget<Bitmap>() {
+                            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                                this@SliderFragment.resource = resource
+                                setupPermissions()
+                            }
+
+                            override fun onLoadFailed(errorDrawable: Drawable?) {
+                                super.onLoadFailed(errorDrawable)
+                                Toast.makeText(context, "Bir Hata Oluştu!", Toast.LENGTH_SHORT).show()
+                            }
+                        })
                 }
             }
 
